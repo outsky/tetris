@@ -4,11 +4,14 @@
 #include <termios.h>
 #include <time.h>
 #include <pthread.h>
+#include <signal.h>
+#include <string.h>
 #include "graphic.h"
 #include "control.h"
 #include "timer.h"
 #include "tetris.h"
 
+static void sigint(int);
 static void quit(void);
 
 static void draw(void);
@@ -18,14 +21,18 @@ static void draw_cur(void);
 static void draw_block(int n);
 
 static void* trd_input(void*);
+static void* trd_timer(void*);
 
 struct termios org;
 int main()
 {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = sigint;
+    sigaction(SIGINT, &sa, NULL);
     atexit(quit);
     prepare_input(&org);
     erase_display();
-    setcolor(33, 40);
 
     srand(time(NULL));
     game_init();
@@ -33,14 +40,14 @@ int main()
 
     pthread_t tid;
     pthread_create(&tid, NULL, trd_input, NULL);
-    pthread_join(tid, NULL);
-    draw();
-    /*
+    pthread_detach(tid);
+    pthread_create(&tid, NULL, trd_timer, NULL);
+    pthread_detach(tid);
     for(;;) {
         draw();
-        sleep(2);
+        fflush(stdout);
+        sleep(1);
     }
-    */
 
 
     return 0;
@@ -51,12 +58,11 @@ static void quit(void)
     restore();
     restore_input(&org);
     erase_display();
-    printf("quit\n");
+    exit(0);
 }
 
 static void draw(void)
 {
-    erase_display();
     draw_preview();
     draw_playgrd();
     draw_cur();
@@ -65,53 +71,53 @@ static void draw(void)
 static void draw_block(int n)
 {
     int f,b;
-    f = 30;
+    f = 34;
     char* s;
     switch(n)
     {
         case 0:
-        b = 47;
-        s = "[0";
+        b = 40;
+        s = "_|";
         break;
 
         case 1:
         b = 41;
-        s = "[1";
+        s = "  ";
         break;
 
         case 2:
         b = 42;
-        s = "[2";
+        s = "  ";
         break;
 
         case 3:
         b = 43;
-        s = "[3";
+        s = "  ";
         break;
 
         case 4:
         b = 44;
-        s = "[4";
+        s = "  ";
         break;
 
         case 5:
         b = 45;
-        s = "[5";
+        s = "  ";
         break;
 
         case 6:
         b = 46;
-        s = "[6";
+        s = "  ";
         break;
 
         case 7:
         b = 43;
-        s = "[7";
+        s = "  ";
         break;
 
         case 8:
         b = 44;
-        s = "[8";
+        s = "  ";
         break;
 
         default:
@@ -158,6 +164,18 @@ static void draw_cur(void)
     }
 }
 
+static void* trd_timer(void* p)
+{
+    timer_init();
+    for(;;) {
+        timer_update();
+        if(timer_interval() >= 1000) {
+            //move_down();
+            timer_reset();
+        }
+        usleep(50);
+    }
+}
 static void* trd_input(void* p)
 {
     int c;
@@ -171,10 +189,16 @@ static void* trd_input(void* p)
         } else if(c == 'l') {
             move_right();
         } else if(c == 'q'){
-            exit(0);
+            quit();
         } else {
             continue;
         }
         draw();
     }
+}
+
+static void sigint(int n)
+{
+    quit();
+    exit(0);
 }

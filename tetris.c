@@ -8,6 +8,7 @@ void game_init()
 {
     GAME = malloc(sizeof(struct game));
     memset(GAME, 0, sizeof(struct game));
+    GAME->state = PLAY;
     next();
     next();
 }
@@ -42,14 +43,16 @@ static int can_move_right()
     }
     return 1;
 }
-static int can_rotate()
-{
-    return 0;
-}
 
 int move_down()
 {
     if(1 != can_move_down()) {
+        stick();
+        if(1 == isgameover()) {
+            gameover();
+            return 0;
+        }
+        clearlines();
         next();
         return 0;
     }
@@ -84,9 +87,255 @@ int move_left()
 }
 int rotate()
 {
-    if(1 != can_rotate())
-        return 0;
+    int ret = 0;
+    switch(GAME->curtype)
+    {
+        case I:
+        ret = rotate_i();
+        break;
 
+        case J:
+        ret = rotate_j();
+        break;
+
+        case L:
+        ret = rotate_l();
+        break;
+
+        case S:
+        ret = rotate_s();
+        break;
+
+        case T:
+        ret = rotate_t();
+        break;
+
+        case Z:
+        ret = rotate_z();
+        break;
+
+        case O:
+        default:
+        break;
+    }
+
+    return ret; 
+}
+
+static int rotate_i(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate) {
+        case 0:
+        case 2:
+            if(!ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1) ||
+                !ISEMPTY(cl,cc-1) || !ISEMPTY(cl,cc-2) || 
+                !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+1,cc-2) ||
+                !ISEMPTY(cl+2,cc-1) || !ISEMPTY(cl+2,cc-2))
+                    return 0;
+
+            cur[0].col = cur[2].col = cur[3].col = cc;
+            cur[0].line = cl-1;
+            cur[2].line = cl+1;
+            cur[3].line = cl+2;
+            break;
+
+        case 1:
+        case 3:
+            if(!ISEMPTY(cl-1,cc) || !ISEMPTY(cl-1,cc+1) || 
+                !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+2,cc) ||        
+                !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+2,cc-1) ||
+                !ISEMPTY(cl+1,cc-2) || !ISEMPTY(cl+2,cc-2))
+                return 0;
+
+            cur[0].line = cur[2].line = cur[3].line = cl;
+            cur[0].col = cc+1;
+            cur[2].col = cc-1;
+            cur[3].col = cc-2;
+            break;
+    }
+    GAME->curstate = nextstate;
+    return 1;
+}
+static int rotate_j(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate) {
+        case 0:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc-1;
+            cur[0].line = cl-1;
+            cur[2].line = cur[3].line = cl+1;
+            break;
+
+        case 1:
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl-1;
+            cur[0].col = cc+1;
+            cur[2].col = cur[3].col = cc-1;
+            break;
+
+        case 2:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc+1;
+            cur[0].line = cl+1;
+            cur[2].line = cur[3].line = cl-1;
+            break;
+
+        case 3:
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl+1;
+            cur[0].col = cc-1;
+            cur[2].col = cur[3].col = cc+1;
+            break;
+    }
+    GAME->curstate = nextstate;
+    return 1;
+}
+static int rotate_l(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate)
+    {
+        case 0:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc+1;
+            cur[0].line = cl-1;
+            cur[2].line = cur[3].line = cl+1;
+            break;
+
+        case 1:
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl+1;
+            cur[0].col = cc+1;
+            cur[2].col = cur[3].col = cc-1;
+            break;
+
+        case 2:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc-1;
+            cur[0].line = cl+1;
+            cur[2].line = cur[3].line = cl-1;
+            break;
+
+        case 3:
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl-1;
+            cur[0].col = cc-1;
+            cur[2].col = cur[3].col = cc+1;
+            break;
+    }
+    GAME->curstate = nextstate;
+    return 1;
+}
+static int rotate_s(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate)
+    {
+        case 0:
+        case 2:
+            cur[0].col = cc+1;
+            cur[2].col = cc;
+            cur[3].col = cc-1;
+            cur[0].line = cl;
+            cur[2].line = cur[3].line = cl+1;
+            break;
+
+        case 1:
+        case 3:
+            cur[0].col = cc;
+            cur[2].col = cur[3].col = cc-1;
+            cur[0].line = cl+1;
+            cur[2].line = cl;
+            cur[3].line = cl-1;
+            break;
+    }
+    GAME->curstate = nextstate;
+    return 1;
+}
+static int rotate_t(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate)
+    {
+        case 0:
+            cur[0].col = cc-1;
+            cur[2].col = cc+1;
+            cur[3].col = cc;
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl+1;
+            break;
+
+        case 1:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc-1;
+            cur[0].line = cl-1;
+            cur[2].line = cl+1;
+            cur[3].line = cl;
+            break;
+
+        case 2:
+            cur[0].col = cc+1;
+            cur[2].col = cc-1;
+            cur[3].col = cc;
+            cur[0].line = cur[2].line = cl;
+            cur[3].line = cl-1;
+            break;
+
+        case 3:
+            cur[0].col = cur[2].col = cc;
+            cur[3].col = cc+1;
+            cur[0].line = cl+1;
+            cur[2].line = cl-1;
+            cur[3].line = cl;
+            break;
+    }
+    GAME->curstate = nextstate;
+    return 1;
+}
+static int rotate_z(void)
+{
+    struct pos* cur = GAME->cur;
+    int cl = GAME->cur[1].line;
+    int cc = GAME->cur[1].col;
+    int nextstate = (GAME->curstate+1)%4;
+    switch(nextstate)
+    {
+        case 0:
+        case 2:
+            cur[0].col = cc-1;
+            cur[2].col = cc;
+            cur[3].col = cc+1;
+            cur[0].line = cl;
+            cur[2].line = cur[3].line = cl+1;
+            break;
+
+        case 1:
+        case 3:
+            cur[0].col = cc;
+            cur[2].col = cur[3].col = cc-1;
+            cur[0].line = cl-1;
+            cur[2].line = cl;
+            cur[3].line = cl+1;
+            break;
+    }
+    GAME->curstate = nextstate;
     return 1;
 }
 
@@ -110,10 +359,18 @@ static int clearline(int n)
     }
     return 0;
 }
-int clearlines(int from, int to)
+int clearlines(void)
 {
-    int count = 0;
+    int from, to;
+    from = to = GAME->cur[0].line;
     int i;
+    for(i=1; i<4; ++i) {
+        if(GAME->cur[i].line < from)
+            from = GAME->cur[i].line;
+        if(GAME->cur[i].line > to)
+            to = GAME->cur[i].line;
+    }
+    int count = 0;
     for(i=from; i<=to; ++i) {
         if(1 == clearline(i))
             ++count;
@@ -123,9 +380,11 @@ int clearlines(int from, int to)
 
 void next()
 {
+    static int i=0;
     GAME->curtype = GAME->nexttyp;
     GAME->curstate = GAME->nextstate;
-    GAME->nexttyp = rand()%7 + 2;
+    //GAME->nexttyp = rand()%7 + 2;
+    GAME->nexttyp = i++%7 + 2;
     GAME->nextstate = rand()%4;
     fillnext();
     fillcur();
@@ -176,56 +435,82 @@ static void fillcur(void)
     struct pos* cur = GAME->cur;
     switch(GAME->curtype)
     {
-        case 2:
-            cur[0].line=-4; cur[0].col=COLS/2;
-            cur[1].line=-3; cur[1].col=COLS/2;
-            cur[2].line=-2; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2;
+        case I:
+            cur[0].line=-4; cur[0].col=COLS/2;      // 0
+            cur[1].line=-3; cur[1].col=COLS/2;      // 1
+            cur[2].line=-2; cur[2].col=COLS/2;      // 2
+            cur[3].line=-1; cur[3].col=COLS/2;      // 3
             break;
 
-        case 3:
-            cur[0].line=-3; cur[0].col=COLS/2;
-            cur[1].line=-2; cur[1].col=COLS/2;
-            cur[2].line=-1; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2-1;
+        case J:
+            cur[0].line=-3; cur[0].col=COLS/2;      //
+            cur[1].line=-2; cur[1].col=COLS/2;      // 0
+            cur[2].line=-1; cur[2].col=COLS/2;      // 1
+            cur[3].line=-1; cur[3].col=COLS/2-1;    //32
             break;
 
-        case 4:
-            cur[0].line=-3; cur[0].col=COLS/2;
-            cur[1].line=-2; cur[1].col=COLS/2;
-            cur[2].line=-1; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2+1;
+        case L:
+            cur[0].line=-3; cur[0].col=COLS/2;      // 
+            cur[1].line=-2; cur[1].col=COLS/2;      // 0
+            cur[2].line=-1; cur[2].col=COLS/2;      // 1
+            cur[3].line=-1; cur[3].col=COLS/2+1;    // 23
             break;
 
-        case 5:
-            cur[0].line=-2; cur[0].col=COLS/2;
-            cur[1].line=-2; cur[1].col=COLS/2+1;
-            cur[2].line=-1; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2+1;
+        case O:
+            cur[0].line=-2; cur[0].col=COLS/2;      // 
+            cur[1].line=-2; cur[1].col=COLS/2+1;    // 
+            cur[2].line=-1; cur[2].col=COLS/2;      // 01
+            cur[3].line=-1; cur[3].col=COLS/2+1;    // 23
             break;
 
-        case 6:
-            cur[0].line=-2; cur[0].col=COLS/2+1;
-            cur[1].line=-2; cur[1].col=COLS/2;
-            cur[2].line=-1; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2-1;
+        case S:
+            cur[0].line=-2; cur[0].col=COLS/2+1;    //
+            cur[1].line=-2; cur[1].col=COLS/2;      //
+            cur[2].line=-1; cur[2].col=COLS/2;      // 10
+            cur[3].line=-1; cur[3].col=COLS/2-1;    //32
             break;
 
-        case 7:
-            cur[0].line=-2; cur[0].col=COLS/2-1;
-            cur[1].line=-2; cur[1].col=COLS/2;
-            cur[2].line=-2; cur[2].col=COLS/2+1;
-            cur[3].line=-1; cur[3].col=COLS/2;
+        case T:
+            cur[0].line=-2; cur[0].col=COLS/2-1;    //
+            cur[1].line=-2; cur[1].col=COLS/2;      //
+            cur[2].line=-2; cur[2].col=COLS/2+1;    //012 
+            cur[3].line=-1; cur[3].col=COLS/2;      // 3
             break;
 
-        case 8:
-            cur[0].line=-2; cur[0].col=COLS/2-1;
-            cur[1].line=-2; cur[1].col=COLS/2;
-            cur[2].line=-1; cur[2].col=COLS/2;
-            cur[3].line=-1; cur[3].col=COLS/2+1;
+        case Z:
+            cur[0].line=-2; cur[0].col=COLS/2-1;    //
+            cur[1].line=-2; cur[1].col=COLS/2;      //
+            cur[2].line=-1; cur[2].col=COLS/2;      //01
+            cur[3].line=-1; cur[3].col=COLS/2+1;    // 23
             break;
 
         default:
             return;
     }
+
+    GAME->curstate = GAME->curstate==0 ? 3 : GAME->curstate-1;
+    rotate();
+}
+
+static void stick(void)
+{
+    int i;
+    for(i=0; i<4; ++i) {
+        GAME->playgrd[GAME->cur[i].line][GAME->cur[i].col] = GAME->curtype;
+    }
+}
+
+static int isgameover(void)
+{
+    int i;
+    for(i=0; i<COLS; ++i) {
+        if(GAME->playgrd[0][i] != 0)
+            return 1;
+    }
+    return 0;
+}
+
+static void gameover(void)
+{
+    GAME->state = OVER;
 }

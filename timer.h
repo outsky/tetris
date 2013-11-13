@@ -13,5 +13,6 @@ struct timer
 void timer_init();
 void timer_update();
 int timer_interval();
+void timer_reset(void);
 
 #endif
