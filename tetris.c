@@ -48,6 +48,13 @@ static int can_move_right()
     return 1;
 }
 
+int drop_down(void)
+{
+    while(1 == move_down())
+        ;
+    return 0;
+}
+
 int move_down()
 {
     if(1 != can_move_down()) {

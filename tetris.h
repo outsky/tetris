@@ -57,6 +57,7 @@ int move_down();
 int move_right();
 int move_left();
 int rotate();
+int drop_down(void);
 
 static int rotate_i(void);
 static int rotate_j(void);

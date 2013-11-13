@@ -252,6 +252,8 @@ static void* trd_input(void* p)
             move_left();
         } else if(c == 'l') {
             move_right();
+        } else if(c == 32) {
+            drop_down();
         } else if(c == 'q'){
             quit();
         } else {
