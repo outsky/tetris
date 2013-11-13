@@ -11,6 +11,13 @@
 #include "timer.h"
 #include "tetris.h"
 
+#define PGRD_PADLEFT 10
+#define PGRD_PADTOP 5
+#define PRV_PADLEFT PGRD_PADLEFT+COLS*2
+#define PRV_PADTOP PGRD_PADTOP
+#define INF_PADLEFT PRV_PADLEFT
+#define INF_PADTOP PRV_PADTOP+4
+
 static void sigint(int);
 static void quit(void);
 
@@ -19,7 +26,7 @@ static void draw_preview(void);
 static void draw_playgrd(void);
 static void draw_cur(void);
 static void draw_info(void);
-static void draw_block(int n);
+static void draw_block(int preview, int n);
 
 static void* trd_input(void*);
 static void* trd_timer(void*);
@@ -59,6 +66,7 @@ static void quit(void)
     restore();
     restore_input(&org);
     erase_display();
+    printf("\n");
     exit(0);
 }
 
@@ -70,15 +78,15 @@ static void draw(void)
     draw_cur();
 }
 
-static void draw_block(int n)
+static void draw_block(int preview, int n)
 {
     int f,b;
-    f = 34;
+    f = 1==preview ? 35 : 34;
     char* s;
     switch(n)
     {
         case 0:
-        b = 40;
+        b = 1==preview ? 41 : 40;
         s = "_|";
         break;
 
@@ -135,21 +143,19 @@ static void draw_preview(void)
     int l,c;
     for(l=0; l<4; ++l) {
         for(c=0; c<4; ++c) {
-            cursor_to(10+c*2, 5+l);
-            draw_block(GAME->nextgrd[l][c]);
+            cursor_to(PRV_PADLEFT+c*2, PRV_PADTOP+l);
+            draw_block(1, GAME->nextgrd[l][c]);
         }
     }
 }
 
 static void draw_playgrd(void)
 {
-    #define PADLEFT 20
-    #define PADTOP 10
     int l,c;
     for(l=0; l<LINES; ++l) {
         for(c=0; c<COLS; ++c) {
-            cursor_to(PADLEFT+c*2, PADTOP+l);
-            draw_block(GAME->playgrd[l][c]);
+            cursor_to(PGRD_PADLEFT+c*2, PGRD_PADTOP+l);
+            draw_block(0, GAME->playgrd[l][c]);
         }
     }
 }
@@ -161,14 +167,65 @@ static void draw_cur(void)
         if(GAME->cur[i].line < 0)
             continue;
 
-        cursor_to(PADLEFT+GAME->cur[i].col*2, PADTOP+GAME->cur[i].line);
-        draw_block(GAME->curtype);
+        cursor_to(PGRD_PADLEFT+GAME->cur[i].col*2, PGRD_PADTOP+GAME->cur[i].line);
+        draw_block(0, GAME->curtype);
     }
 }
 
 static void draw_info(void)
 {
+    setcolor(33, 42);
+    setattr(1);
+    cursor_to(INF_PADLEFT, INF_PADTOP);
+    printf("        ");
+    cursor_to(INF_PADLEFT, INF_PADTOP+1);
+    printf("Lv.%5d", GAME->level);
+    cursor_to(INF_PADLEFT, INF_PADTOP+2);
+    printf("        ");
 
+    setcolor(32, 44);
+    cursor_to(INF_PADLEFT, INF_PADTOP+3);
+    printf("%8d", GAME->score);
+
+    setcolor(34, 40);
+    cursor_to(INF_PADLEFT, INF_PADTOP+4);
+    printf("%8d", GAME->lines);
+
+    setcolor(37, 40);
+    cursor_to(INF_PADLEFT, INF_PADTOP+5);
+    printf("%8d", GAME->one);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+6);
+    printf("%8d", GAME->two);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+7);
+    printf("%8d", GAME->three);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+8);
+    printf("%8d", GAME->four);
+    setcolor(37, 40);
+    cursor_to(INF_PADLEFT, INF_PADTOP+9);
+    printf("%8d", GAME->i);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+10);
+    printf("%8d", GAME->j);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+11);
+    printf("%8d", GAME->o);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+12);
+    printf("%8d", GAME->l);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+13);
+    printf("%8d", GAME->s);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+14);
+    printf("%8d", GAME->t);
+
+    cursor_to(INF_PADLEFT, INF_PADTOP+15);
+    printf("%8d", GAME->z);
+
+    restore();
 }
 
 static void* trd_timer(void* p)
