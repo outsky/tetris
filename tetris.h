@@ -20,6 +20,7 @@
 #define Z 8
 
 #define ISEMPTY(line, col) ((line)<0||(col)<0||GAME->playgrd[(line)][(col)]==EMPTY)
+extern int speeds[];
 
 struct pos
 {
@@ -74,5 +75,7 @@ static void fillcur();
 static void stick(void);
 static void gameover(void);
 static int isgameover(void);
+
+static void onclearline(int n);
 
 #endif

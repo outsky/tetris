@@ -179,7 +179,7 @@ static void draw_info(void)
     cursor_to(INF_PADLEFT, INF_PADTOP);
     printf("        ");
     cursor_to(INF_PADLEFT, INF_PADTOP+1);
-    printf("Lv.%5d", GAME->level);
+    printf("Lv.%5d", GAME->level+1);
     cursor_to(INF_PADLEFT, INF_PADTOP+2);
     printf("        ");
 
@@ -233,8 +233,8 @@ static void* trd_timer(void* p)
     timer_init();
     for(;;) {
         timer_update();
-        if(timer_interval() >= 1000) {
-            //move_down();
+        if(timer_interval() >= speeds[GAME->level]) {
+            move_down();
             timer_reset();
         }
         usleep(50);

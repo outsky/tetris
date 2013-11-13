@@ -3,9 +3,10 @@
 #include <string.h>
 
 struct game* GAME = NULL;
-static int levels[] = {100, 200, 400, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600};
-static int scores[] = {1, 5, 10, 20};
-static int speeds[] = {1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500};
+#define MAXLEVEL 11
+static int levels[MAXLEVEL] = {100, 200, 400, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600};
+static int scores[4] = {1, 5, 10, 20};
+int speeds[MAXLEVEL] = {1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500};
 
 void game_init()
 {
@@ -55,7 +56,8 @@ int move_down()
             gameover();
             return 0;
         }
-        clearlines();
+        int ln = clearlines();
+        onclearline(ln);
         next();
         return 0;
     }
@@ -386,8 +388,7 @@ void next()
     static int i=0;
     GAME->curtype = GAME->nexttyp;
     GAME->curstate = GAME->nextstate;
-    //GAME->nexttyp = rand()%7 + 2;
-    GAME->nexttyp = i++%7 + 2;
+    GAME->nexttyp = rand()%7 + 2;
     GAME->nextstate = rand()%4;
     fillnext();
     fillcur();
@@ -439,6 +440,7 @@ static void fillcur(void)
     switch(GAME->curtype)
     {
         case I:
+            GAME->i++;
             cur[0].line=-4; cur[0].col=COLS/2;      // 0
             cur[1].line=-3; cur[1].col=COLS/2;      // 1
             cur[2].line=-2; cur[2].col=COLS/2;      // 2
@@ -446,6 +448,7 @@ static void fillcur(void)
             break;
 
         case J:
+            GAME->j++;
             cur[0].line=-3; cur[0].col=COLS/2;      //
             cur[1].line=-2; cur[1].col=COLS/2;      // 0
             cur[2].line=-1; cur[2].col=COLS/2;      // 1
@@ -453,6 +456,7 @@ static void fillcur(void)
             break;
 
         case L:
+            GAME->l++;
             cur[0].line=-3; cur[0].col=COLS/2;      // 
             cur[1].line=-2; cur[1].col=COLS/2;      // 0
             cur[2].line=-1; cur[2].col=COLS/2;      // 1
@@ -460,6 +464,7 @@ static void fillcur(void)
             break;
 
         case O:
+            GAME->o++;
             cur[0].line=-2; cur[0].col=COLS/2;      // 
             cur[1].line=-2; cur[1].col=COLS/2+1;    // 
             cur[2].line=-1; cur[2].col=COLS/2;      // 01
@@ -467,6 +472,7 @@ static void fillcur(void)
             break;
 
         case S:
+            GAME->s++;
             cur[0].line=-2; cur[0].col=COLS/2+1;    //
             cur[1].line=-2; cur[1].col=COLS/2;      //
             cur[2].line=-1; cur[2].col=COLS/2;      // 10
@@ -474,6 +480,7 @@ static void fillcur(void)
             break;
 
         case T:
+            GAME->t++;
             cur[0].line=-2; cur[0].col=COLS/2-1;    //
             cur[1].line=-2; cur[1].col=COLS/2;      //
             cur[2].line=-2; cur[2].col=COLS/2+1;    //012 
@@ -481,6 +488,7 @@ static void fillcur(void)
             break;
 
         case Z:
+            GAME->z++;
             cur[0].line=-2; cur[0].col=COLS/2-1;    //
             cur[1].line=-2; cur[1].col=COLS/2;      //
             cur[2].line=-1; cur[2].col=COLS/2;      //01
@@ -516,4 +524,28 @@ static int isgameover(void)
 static void gameover(void)
 {
     GAME->state = OVER;
+}
+
+static void onclearline(int n)
+{
+    if(n<=0 || n>4)
+        return;
+    switch(n) {
+        case 1:
+            GAME->one++;
+            break;
+        case 2:
+            GAME->two++;
+            break;
+        case 3:
+            GAME->three++;
+            break;
+        case 4:
+            GAME->four++;
+            break;
+    }
+    GAME->score += scores[n-1];
+
+    if(GAME->level<MAXLEVEL && GAME->score>levels[GAME->level])
+        GAME->level++;
 }
