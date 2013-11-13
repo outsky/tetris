@@ -3,6 +3,9 @@
 #include <string.h>
 
 struct game* GAME = NULL;
+static int levels[] = {100, 200, 400, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600};
+static int scores[] = {1, 5, 10, 20};
+static int speeds[] = {1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500};
 
 void game_init()
 {

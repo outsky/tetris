@@ -40,6 +40,7 @@ struct game
     int score;
     int level;
     int lines;
+    int one,two,three,four;
     int i,j,l,o,s,t,z;
 };
 

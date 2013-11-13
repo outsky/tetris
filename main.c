@@ -18,6 +18,7 @@ static void draw(void);
 static void draw_preview(void);
 static void draw_playgrd(void);
 static void draw_cur(void);
+static void draw_info(void);
 static void draw_block(int n);
 
 static void* trd_input(void*);
@@ -63,8 +64,9 @@ static void quit(void)
 
 static void draw(void)
 {
-    draw_preview();
     draw_playgrd();
+    draw_preview();
+    draw_info();
     draw_cur();
 }
 
@@ -162,6 +164,11 @@ static void draw_cur(void)
         cursor_to(PADLEFT+GAME->cur[i].col*2, PADTOP+GAME->cur[i].line);
         draw_block(GAME->curtype);
     }
+}
+
+static void draw_info(void)
+{
+
 }
 
 static void* trd_timer(void* p)
