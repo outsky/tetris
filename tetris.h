@@ -71,9 +71,9 @@ static int islinefull(int n);
 static int clearline(int n);
 int clearlines(void);
 
-void next();
-static void fillnext();
-static void fillcur();
+static void next(void);
+static void fillnext(void);
+static void fillcur(void);
 static void stick(void);
 static void gameover(void);
 static int isgameover(void);

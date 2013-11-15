@@ -12,8 +12,9 @@ void game_init()
 {
     GAME = malloc(sizeof(struct game));
     memset(GAME, 0, sizeof(struct game));
+    GAME->nexttyp = rand()%7 + 2;
+    GAME->nextstate = rand()%4;
     GAME->state = PLAY;
-    next();
     next();
 }
 
@@ -528,7 +529,7 @@ int clearlines(void)
     return count;
 }
 
-void next()
+static void next(void)
 {
     static int i=0;
     GAME->curtype = GAME->nexttyp;
@@ -541,41 +542,135 @@ void next()
 
 static void fillnext(void)
 {
-    memset(GAME->nextgrd, 0, sizeof(GAME->nextgrd));
-    int (*nextgrd)[4] = GAME->nextgrd;
-    switch(GAME->nexttyp)
-    {
-        case 2:
-            nextgrd[0][2] = nextgrd[1][2] = nextgrd[2][2] = nextgrd[3][2] = 2;
-            break;
+    static int pattern[7][4][16] = {
+        { // I
+            {0,2,0,0,
+             0,2,0,0,
+             0,2,0,0,
+             0,2,0,0},
+            {0,0,0,0,
+             2,2,2,2,
+             0,0,0,0,
+             0,0,0,0},
+            {0,2,0,0,
+             0,2,0,0,
+             0,2,0,0,
+             0,2,0,0},
+            {0,0,0,0,
+             2,2,2,2,
+             0,0,0,0,
+             0,0,0,0}
+        },{ // J
+            {0,0,0,0,
+             0,0,3,0,
+             0,0,3,0,
+             0,3,3,0},
+            {0,0,0,0,
+             0,3,0,0,
+             0,3,3,3,
+             0,0,0,0},
+            {0,0,0,0,
+             0,3,3,0,
+             0,3,0,0,
+             0,3,0,0},
+            {0,0,0,0,
+             3,3,3,0,
+             0,0,3,0,
+             0,0,0,0}
+        },{ // L
+            {0,0,0,0,
+             0,4,0,0,
+             0,4,0,0,
+             0,4,4,0},
+            {0,0,0,0,
+             4,4,4,0,
+             4,0,0,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,4,4,0,
+             0,0,4,0,
+             0,0,4,0},
+            {0,0,0,0,
+             0,0,4,0,
+             4,4,4,0,
+             0,0,0,0}
+        },{ // O
+            {0,0,0,0,
+             0,5,5,0,
+             0,5,5,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,5,5,0,
+             0,5,5,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,5,5,0,
+             0,5,5,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,5,5,0,
+             0,5,5,0,
+             0,0,0,0}
+        },{ // S
+            {0,0,0,0,
+             0,6,6,0,
+             6,6,0,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,6,0,0,
+             0,6,6,0,
+             0,0,6,0},
+            {0,0,0,0,
+             0,6,6,0,
+             6,6,0,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,6,0,0,
+             0,6,6,0,
+             0,0,6,0}
+        },{ // T
+            {0,0,0,0,
+             7,7,7,0,
+             0,7,0,0,
+             0,0,0,0},
+            {0,0,7,0,
+             0,7,7,0,
+             0,0,7,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,7,0,0,
+             7,7,7,0,
+             0,0,0,0},
+            {0,7,0,0,
+             0,7,7,0,
+             0,7,0,0,
+             0,0,0,0}
+        },{ // Z
+            {0,0,0,0,
+             8,8,0,0,
+             0,8,8,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,8,0,0,
+             0,8,8,0,
+             0,0,8,0},
+            {0,0,0,0,
+             8,8,0,0,
+             0,8,8,0,
+             0,0,0,0},
+            {0,0,0,0,
+             0,8,0,0,
+             0,8,8,0,
+             0,0,8,0}
+        }
+    };
 
-        case 3:
-            nextgrd[0][2] = nextgrd[1][2] = nextgrd[2][2] = nextgrd[2][1] = 3;
-            break;
+    int t = GAME->nexttyp;
+    int s = GAME->nextstate;
+    if(t>Z || t<I || s<0 || s>3)
+        return;
 
-        case 4:
-            nextgrd[0][2] = nextgrd[1][2] = nextgrd[2][2] = nextgrd[2][3] = 4;
-            break;
-
-        case 5:
-            nextgrd[1][1] = nextgrd[1][2] = nextgrd[2][1] = nextgrd[2][2] = 5;
-            break;
-
-        case 6:
-            nextgrd[2][0] = nextgrd[2][1] = nextgrd[1][1] = nextgrd[1][2] = 6;
-            break;
-
-        case 7:
-            nextgrd[1][1] = nextgrd[1][2] = nextgrd[1][3] = nextgrd[2][2] = 7;
-            break;
-
-        case 8:
-            nextgrd[1][1] = nextgrd[1][2] = nextgrd[2][2] = nextgrd[2][3] = 8;
-            break;
-
-        default:
-            return;
-    }
+    memcpy(GAME->nextgrd, pattern[t-2][s], sizeof(GAME->nextgrd));
 }
 
 static void fillcur(void)
