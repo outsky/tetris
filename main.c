@@ -22,7 +22,6 @@ static void draw_cur(void);
 static void draw_info(void);
 static void draw_block(int preview, int n);
 
-static void* trd_input(void*);
 static void* trd_timer(void*);
 
 struct termios org;
@@ -38,19 +37,31 @@ int main()
 
     srand(time(NULL));
     game_init();
-    next();
+    draw();
 
     pthread_t tid;
-    pthread_create(&tid, NULL, trd_input, NULL);
-    pthread_detach(tid);
     pthread_create(&tid, NULL, trd_timer, NULL);
     pthread_detach(tid);
-    for(;;) {
-        draw();
-        fflush(stdout);
-        sleep(1);
-    }
 
+    int c;
+    while(EOF != (c=getchar())) {
+        if(c == 'j') {
+            move_down();
+        } else if(c == 'k') {
+            rotate();
+        } else if(c == 'h') {
+            move_left();
+        } else if(c == 'l') {
+            move_right();
+        } else if(c == 32) {
+            drop_down();
+        } else if(c == 'q'){
+            quit();
+        } else {
+            continue;
+        }
+        draw();
+    }
 
     return 0;
 }
@@ -71,6 +82,7 @@ static void draw(void)
     draw_preview();
     draw_info();
     draw_cur();
+    fflush(stdout);
 }
 
 static void draw_block(int preview, int n)
@@ -231,30 +243,9 @@ static void* trd_timer(void* p)
         if(timer_interval() >= speeds[GAME->level]) {
             move_down();
             timer_reset();
+            draw();
         }
         usleep(50);
-    }
-}
-static void* trd_input(void* p)
-{
-    int c;
-    while(EOF != (c=getchar())) {
-        if(c == 'j') {
-            move_down();
-        } else if(c == 'k') {
-            rotate();
-        } else if(c == 'h') {
-            move_left();
-        } else if(c == 'l') {
-            move_right();
-        } else if(c == 32) {
-            drop_down();
-        } else if(c == 'q'){
-            quit();
-        } else {
-            continue;
-        }
-        draw();
     }
 }
 
