@@ -19,7 +19,8 @@
 #define T 7
 #define Z 8
 
-#define ISEMPTY(line, col) ((line)<0||(col)<0||GAME->playgrd[(line)][(col)]==EMPTY)
+#define ISEMPTY(line, col) (((col)>=0&&(col)<COLS) && ((line)<0 || ((line)<LINES&&GAME->playgrd[line][col]==EMPTY)))
+
 extern int speeds[];
 
 struct pos

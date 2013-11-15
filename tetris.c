@@ -134,35 +134,49 @@ int rotate()
     return ret; 
 }
 
+// FOR ALL rotate_x FUNCTIONS
+// 
+// c  : the center block
+// num: the index of block
+// {} : next state blocks
+// [] : current state blocks
+// <> : blocks
+// #  : this block blocks the rotation
 static int rotate_i(void)
 {
     struct pos* cur = GAME->cur;
-    int cl = GAME->cur[1].line;
-    int cc = GAME->cur[1].col;
+    int cl = cur[1].line;
+    int cc = cur[1].col;
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate) {
+        /*
+            <#><#>{#}
+            [3][2][c][0] 
+                  {#}<#>
+                  {#}
+        */
         case 0:
         case 2:
-            if(!ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1) ||
-                !ISEMPTY(cl,cc-1) || !ISEMPTY(cl,cc-2) || 
-                !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+1,cc-2) ||
-                !ISEMPTY(cl+2,cc-1) || !ISEMPTY(cl+2,cc-2))
-                    return 0;
-
+            if(!ISEMPTY(cl-1,cc-2) || !ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) ||
+              !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+1,cc+1) || !ISEMPTY(cl+2,cc))
+                return 0;
             cur[0].col = cur[2].col = cur[3].col = cc;
             cur[0].line = cl-1;
             cur[2].line = cl+1;
             cur[3].line = cl+2;
             break;
 
+        /*
+                [0]<#>
+          {#}{#}[c]{#}
+             <#>[2]
+             <#>[3]
+        */
         case 1:
         case 3:
-            if(!ISEMPTY(cl-1,cc) || !ISEMPTY(cl-1,cc+1) || 
-                !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+2,cc) ||        
-                !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+2,cc-1) ||
-                !ISEMPTY(cl+1,cc-2) || !ISEMPTY(cl+2,cc-2))
+            if(!ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+2,cc-1) ||
+              !ISEMPTY(cl,cc-2) || !ISEMPTY(cl,cc-1) || !ISEMPTY(cl,cc+1)) 
                 return 0;
-
             cur[0].line = cur[2].line = cur[3].line = cl;
             cur[0].col = cc+1;
             cur[2].col = cc-1;
@@ -179,28 +193,60 @@ static int rotate_j(void)
     int cc = GAME->cur[1].col;
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate) {
+        /*
+             <#>{#}
+             [0][c][2]
+             {#}{#}[3]
+        */       
         case 0:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) ||
+              !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+1,cc))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc-1;
             cur[0].line = cl-1;
             cur[2].line = cur[3].line = cl+1;
             break;
 
+        /*
+             {#}[0]<#>
+             {#}[c]{#}
+             [3][2]
+        */
         case 1:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc+1) ||
+              !ISEMPTY(cl,cc-1) || !ISEMPTY(cl,cc+1))
+                return 0;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl-1;
             cur[0].col = cc+1;
             cur[2].col = cur[3].col = cc-1;
             break;
-
+        
+        /*
+             [3]{#}{#}
+             [2][c][0]
+                {#}<#>
+        */
         case 2:
+            if(!ISEMPTY(cl-1,cc) || !ISEMPTY(cl-1,cc+1) ||
+              !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc+1;
             cur[0].line = cl+1;
             cur[2].line = cur[3].line = cl-1;
             break;
-
+        
+        /*
+                [2][3]
+             {#}[c]{#}
+             <#>[0]{#}
+        */
         case 3:
+            if(!ISEMPTY(cl,cc-1) || !ISEMPTY(cl,cc+1) ||
+              !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl+1;
             cur[0].col = cc-1;
@@ -218,28 +264,60 @@ static int rotate_l(void)
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate)
     {
+        /*
+             <#>{#}[3]
+             [0][c][2]
+                {#}{#}
+        */
         case 0:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) ||
+              !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc+1;
             cur[0].line = cl-1;
             cur[2].line = cur[3].line = cl+1;
             break;
-
+       
+        /*
+                [0]<#>
+             {#}[c]{#}
+             {#}[2][3]
+        */
         case 1:
+            if(!ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1) ||
+              !ISEMPTY(cl,cc-1) || !ISEMPTY(cl+1,cc-1))
+                return 0;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl+1;
             cur[0].col = cc+1;
             cur[2].col = cur[3].col = cc-1;
             break;
-
+        
+        /*
+             {#}{#}
+             [2][c][0]
+             [3]{#}<#>
+        */
         case 2:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) ||
+              !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc-1;
             cur[0].line = cl+1;
             cur[2].line = cur[3].line = cl-1;
             break;
-
+        
+        /*
+             [3][2]{#}
+             {#}[c]{#}
+             <#>[0]
+        */
         case 3:
+            if(!ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1) ||
+              !ISEMPTY(cl,cc-1) || !ISEMPTY(cl+1,cc-1))
+                return 0;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl-1;
             cur[0].col = cc-1;
@@ -257,17 +335,31 @@ static int rotate_s(void)
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate)
     {
+        /*
+             [3]{#}{#}
+             [2][c]
+             <#>[0]
+        */
         case 0:
         case 2:
+            if(!ISEMPTY(cl-1,cc) || !ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl+1,cc-1))
+                return 0;
             cur[0].col = cc+1;
             cur[2].col = cc;
             cur[3].col = cc-1;
             cur[0].line = cl;
             cur[2].line = cur[3].line = cl+1;
             break;
-
+       
+        /*
+             {#}
+             {#}[c][0]
+             [3][2]<#>
+        */
         case 1:
         case 3:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl,cc-1) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cc;
             cur[2].col = cur[3].col = cc-1;
             cur[0].line = cl+1;
@@ -286,31 +378,63 @@ static int rotate_t(void)
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate)
     {
+        /*
+                [2]<#>
+             {#}[c][3]
+             <#>[0]<#>
+        */
         case 0:
+            if(!ISEMPTY(cl,cc-1) || !ISEMPTY(cl+1,cc-1) ||
+              !ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cc-1;
             cur[2].col = cc+1;
             cur[3].col = cc;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl+1;
             break;
-
+       
+        /*
+             <#>{#}
+             [0][c][2]
+             <#>[3]<#>
+        */
         case 1:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) ||
+              !ISEMPTY(cl+1,cc-1) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc-1;
             cur[0].line = cl-1;
             cur[2].line = cl+1;
             cur[3].line = cl;
             break;
-
+        
+        /*
+             <#>[0]<#>
+             [3][c]{#}
+             <#>[2]
+        */
         case 2:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl+1,cc-1) ||
+              !ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1))
+                return 0;
             cur[0].col = cc+1;
             cur[2].col = cc-1;
             cur[3].col = cc;
             cur[0].line = cur[2].line = cl;
             cur[3].line = cl-1;
             break;
-
+        
+        /*
+             <#>[3]<#>
+             [2][c][0]
+                {#}<#>
+        */
         case 3:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc+1) ||
+              !ISEMPTY(cl+1,cc) || !ISEMPTY(cl+1,cc+1))
+                return 0;
             cur[0].col = cur[2].col = cc;
             cur[3].col = cc+1;
             cur[0].line = cl+1;
@@ -329,17 +453,31 @@ static int rotate_z(void)
     int nextstate = (GAME->curstate+1)%4;
     switch(nextstate)
     {
+        /*
+             {#}[0]<#>
+             [2][c]{#}
+             [3]
+        */
         case 0:
         case 2:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc+1) || !ISEMPTY(cl,cc+1))
+                return 0;
             cur[0].col = cc-1;
             cur[2].col = cc;
             cur[3].col = cc+1;
             cur[0].line = cl;
             cur[2].line = cur[3].line = cl+1;
             break;
-
+       
+        /*
+             <#>{#}
+             [0][c]
+             {#}[2][3]
+        */
         case 1:
         case 3:
+            if(!ISEMPTY(cl-1,cc-1) || !ISEMPTY(cl-1,cc) || !ISEMPTY(cl+1,cc-1))
+                return 0;
             cur[0].col = cc;
             cur[2].col = cur[3].col = cc-1;
             cur[0].line = cl-1;
