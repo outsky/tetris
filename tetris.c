@@ -741,6 +741,19 @@ static void fillcur(void)
 
     GAME->curstate = GAME->curstate==0 ? 3 : GAME->curstate-1;
     rotate();
+    settlecur();
+}
+
+static void settlecur(void)
+{
+    int line = GAME->cur[0].line;
+    int i;
+    for(i=1; i<4; ++i) {
+        if(line < GAME->cur[i].line)
+            line = GAME->cur[i].line;
+    }
+    for(; line<0; ++line)
+        move_down();
 }
 
 static void stick(void)

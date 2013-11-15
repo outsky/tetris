@@ -74,6 +74,7 @@ int clearlines(void);
 static void next(void);
 static void fillnext(void);
 static void fillcur(void);
+static void settlecur(void);
 static void stick(void);
 static void gameover(void);
 static int isgameover(void);
