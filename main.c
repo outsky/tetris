@@ -11,12 +11,6 @@
 #include "timer.h"
 #include "tetris.h"
 
-#define PGRD_PADLEFT 10
-#define PGRD_PADTOP 5
-#define PRV_PADLEFT PGRD_PADLEFT+COLS*2
-#define PRV_PADTOP PGRD_PADTOP
-#define INF_PADLEFT PRV_PADLEFT
-#define INF_PADTOP PRV_PADTOP+4
 
 static void sigint(int);
 static void quit(void);
@@ -72,6 +66,7 @@ static void quit(void)
 
 static void draw(void)
 {
+    center();
     draw_playgrd();
     draw_preview();
     draw_info();
