@@ -22,6 +22,7 @@
 #define ISEMPTY(line, col) (((col)>=0&&(col)<COLS) && ((line)<0 || ((line)<LINES&&GAME->playgrd[line][col]==EMPTY)))
 
 extern int speeds[];
+extern int levels[];
 
 struct pos
 {

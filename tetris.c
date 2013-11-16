@@ -4,7 +4,7 @@
 
 struct game* GAME = NULL;
 #define MAXLEVEL 11
-static int levels[MAXLEVEL] = {100, 200, 400, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600};
+int levels[MAXLEVEL] = {25, 50, 100, 180, 280, 400, 550, 700, 900, 1200, 1500};
 static int scores[4] = {1, 5, 10, 20};
 int speeds[MAXLEVEL] = {1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500};
 

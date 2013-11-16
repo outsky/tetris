@@ -241,6 +241,15 @@ static void draw_status(void)
     cursor_to(ST_LEFT, ST_TOP+7);
     printf(" %7.2f ", 1000.0f/speeds[GAME->level]);
 
+    cursor_to(ST_LEFT, ST_TOP+9);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("NEXTLEVEL");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(ST_LEFT, ST_TOP+10);
+    printf("%8d ", levels[GAME->level]-GAME->score);
+
     restore();
 }
 
