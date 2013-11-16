@@ -105,10 +105,12 @@ static void draw_block(int preview, int n)
     static const char* s[] = {"  ", "  ", "()", "##", "$$", "{}", "<>", "&&", "[]"};
 
     int f = n==Z ? F_YELLOW : F_WHITE;
-    if(1==preview && n==EMPTY)
-        setcolor(f, B_BLACK);
-    else
-        setcolor(f, bc[n]);
+    int b = bc[n];
+    if(1 == preview) {
+        b = n==EMPTY ? B_BLUE : B_BLACK;
+        f = n==EMPTY ? F_BLUE : F_BLACK;;
+    }
+    setcolor(f, b);
     printf("%s", s[n]);
     restore();
 }
@@ -117,13 +119,16 @@ static void draw_preview(void)
 {
     int l,c;
     for(l=0; l<4; ++l) {
+        cursor_to(PRV_LEFT, PRV_TOP+l);
+        draw_pad(B_BLUE, 1);
         for(c=0; c<4; ++c) {
-            cursor_to(PRV_LEFT+c*2, PRV_TOP+l);
+            cursor_to(PRV_LEFT+c*2+1, PRV_TOP+l);
             draw_block(1, GAME->nextgrd[l][c]);
         }
-        draw_pad(B_BLACK, 2);
+        draw_pad(B_BLUE, 1);
     }
     cursor_to(PRV_LEFT, PRV_TOP+4);
+    draw_pad(B_BLUE, 10);
 }
 
 static void draw_playgrd(void)
@@ -166,6 +171,7 @@ static void draw_linerecord(void)
     cursor_to(LR_LEFT, LR_TOP+4);
     printf(" 4> %5d ", GAME->four);
     cursor_to(LR_LEFT, LR_TOP+5);
+    setattr(T_UNDERSCORE);
     printf(" sum %4d ", GAME->one+GAME->two+GAME->three+GAME->four);
     restore();
 }
@@ -177,22 +183,31 @@ static void draw_blockrecord(void)
     setattr(T_BOLD);
     printf("  BLOCKS  ");
     restore();
-    setcolor(F_BLACK, B_WHITE);
+
     cursor_to(BR_LEFT, BR_TOP+1);
-    printf(" I> %5d ", GAME->i);
+    setcolor(F_WHITE, B_RED);
+    printf(" (I) %4d ", GAME->i);
     cursor_to(BR_LEFT, BR_TOP+2);
-    printf(" J> %5d ", GAME->j);
+    setcolor(F_WHITE, B_GREEN);
+    printf(" #J# %4d ", GAME->j);
     cursor_to(BR_LEFT, BR_TOP+3);
-    printf(" L> %5d ", GAME->l);
+    setcolor(F_WHITE, B_YELLOW);
+    printf(" $L$ %4d ", GAME->l);
     cursor_to(BR_LEFT, BR_TOP+4);
-    printf(" O> %5d ", GAME->o);
+    setcolor(F_WHITE, B_BLUE);
+    printf(" {O} %4d ", GAME->o);
     cursor_to(BR_LEFT, BR_TOP+5);
-    printf(" S> %5d ", GAME->s);
+    setcolor(F_WHITE, B_MAGENTA);
+    printf(" <S> %4d ", GAME->s);
     cursor_to(BR_LEFT, BR_TOP+6);
-    printf(" T> %5d ", GAME->t);
+    setcolor(F_WHITE, B_CYAN);
+    printf(" &T& %4d ", GAME->t);
     cursor_to(BR_LEFT, BR_TOP+7);
-    printf(" Z> %5d ", GAME->z);
+    setcolor(F_YELLOW, B_WHITE);
+    printf(" [Z] %4d ", GAME->z);
     cursor_to(BR_LEFT, BR_TOP+8);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_UNDERSCORE);
     printf(" sum %4d ", GAME->i+GAME->j+GAME->l+GAME->o+GAME->s+GAME->t+GAME->z);
     restore();
 }
@@ -202,20 +217,20 @@ static void draw_status(void)
     cursor_to(ST_LEFT, ST_TOP);
     setcolor(F_WHITE, B_BLACK);
     setattr(T_BOLD);
-    printf("  SCORE  ");
+    printf("  LEVEL  ");
     restore();
     setcolor(F_BLACK, B_WHITE);
     cursor_to(ST_LEFT, ST_TOP+1);
-    printf("%8d ", GAME->score);
+    printf("%8d ", GAME->level+1);
 
     cursor_to(ST_LEFT, ST_TOP+3);
     setcolor(F_WHITE, B_BLACK);
     setattr(T_BOLD);
-    printf("  LEVEL  ");
+    printf("  SCORE  ");
     restore();
     setcolor(F_BLACK, B_WHITE);
     cursor_to(ST_LEFT, ST_TOP+4);
-    printf("%8d ", GAME->level+1);
+    printf("%8d ", GAME->score);
 
     cursor_to(ST_LEFT, ST_TOP+6);
     setcolor(F_WHITE, B_BLACK);
@@ -224,7 +239,7 @@ static void draw_status(void)
     restore();
     setcolor(F_BLACK, B_WHITE);
     cursor_to(ST_LEFT, ST_TOP+7);
-    printf("%8d ", speeds[GAME->level]);
+    printf(" %7.2f ", 1000.0f/speeds[GAME->level]);
 
     restore();
 }
