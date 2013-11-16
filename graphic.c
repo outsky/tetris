@@ -5,12 +5,16 @@
 #include "graphic.h"
 #include "tetris.h"
 
-int PGRD_PADLEFT = 10;
-int PGRD_PADTOP = 5;
-int PRV_PADLEFT = 0;
-int PRV_PADTOP = 0;
-int INF_PADLEFT = 0;
-int INF_PADTOP = 0;
+int PGRD_LEFT = 10;
+int PGRD_TOP = 5;
+int PRV_LEFT = 0;
+int PRV_TOP = 0;
+int ST_LEFT = 0;
+int ST_TOP = 0;
+int LR_LEFT = 0;
+int LR_TOP = 0;
+int BR_LEFT = 0;
+int BR_TOP = 0;
 
 void setattr(int i)
 {
@@ -45,12 +49,16 @@ void center()
       0==memcmp(&old, &ws, sizeof(struct winsize)))
         return;
     
-    PGRD_PADLEFT = (ws.ws_col-COLS*2)/2;
-    PGRD_PADTOP = (ws.ws_row-LINES)/2;
-    PRV_PADLEFT = PGRD_PADLEFT+COLS*2;
-    PRV_PADTOP = PGRD_PADTOP;
-    INF_PADLEFT = PRV_PADLEFT;
-    INF_PADTOP = PRV_PADTOP+4;
+    PGRD_LEFT = (ws.ws_col-COLS*2)/2;
+    PGRD_TOP = (ws.ws_row-LINES)/2;
+    PRV_LEFT = PGRD_LEFT+COLS*2+1;
+    PRV_TOP = PGRD_TOP;
+    ST_LEFT = PGRD_LEFT-9;
+    ST_TOP = PGRD_TOP;
+    BR_LEFT = PRV_LEFT;
+    BR_TOP = PGRD_TOP+LINES-9;
+    LR_LEFT = PRV_LEFT;
+    LR_TOP = BR_TOP-6;
 
     memcpy(&old, &ws, sizeof(struct winsize));
     erase_display();

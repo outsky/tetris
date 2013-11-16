@@ -16,11 +16,14 @@ static void sigint(int);
 static void quit(void);
 
 static void draw(void);
-static void draw_preview(void);
 static void draw_playgrd(void);
-static void draw_cur(void);
-static void draw_info(void);
+static void draw_preview(void);
+static void draw_linerecord(void);
+static void draw_blockrecord(void);
+static void draw_status(void);
+
 static void draw_block(int preview, int n);
+static void draw_cur(void);
 
 static void* trd_timer(void*);
 
@@ -80,68 +83,33 @@ static void draw(void)
     center();
     draw_playgrd();
     draw_preview();
-    draw_info();
+    draw_linerecord();
+    draw_blockrecord();
+    draw_status();
     draw_cur();
     fflush(stdout);
 }
 
+static void draw_pad(int bc, int n)
+{
+    setcolor(0, bc);
+    for(; n>0; --n)
+        printf(" ");
+    restore();
+}
+
 static void draw_block(int preview, int n)
 {
-    int f,b;
-    f = 1==preview ? 35 : 34;
-    char* s;
-    switch(n)
-    {
-        case 0:
-        b = 1==preview ? 41 : 40;
-        s = "_|";
-        break;
+    static const int bc[] = {B_BLACK, B_BLACK, B_RED, B_GREEN, B_YELLOW, B_BLUE, B_MAGENTA, B_CYAN, B_WHITE};
 
-        case 1:
-        b = 41;
-        s = "  ";
-        break;
+    static const char* s[] = {"  ", "  ", "()", "##", "$$", "{}", "<>", "&&", "[]"};
 
-        case 2:
-        b = 42;
-        s = "  ";
-        break;
-
-        case 3:
-        b = 43;
-        s = "  ";
-        break;
-
-        case 4:
-        b = 44;
-        s = "  ";
-        break;
-
-        case 5:
-        b = 45;
-        s = "  ";
-        break;
-
-        case 6:
-        b = 46;
-        s = "  ";
-        break;
-
-        case 7:
-        b = 43;
-        s = "  ";
-        break;
-
-        case 8:
-        b = 44;
-        s = "  ";
-        break;
-
-        default:
-        return;
-    }
-    setcolor(f, b);
-    printf("%s", s);
+    int f = n==Z ? F_YELLOW : F_WHITE;
+    if(1==preview && n==EMPTY)
+        setcolor(f, B_BLACK);
+    else
+        setcolor(f, bc[n]);
+    printf("%s", s[n]);
     restore();
 }
 
@@ -150,10 +118,12 @@ static void draw_preview(void)
     int l,c;
     for(l=0; l<4; ++l) {
         for(c=0; c<4; ++c) {
-            cursor_to(PRV_PADLEFT+c*2, PRV_PADTOP+l);
+            cursor_to(PRV_LEFT+c*2, PRV_TOP+l);
             draw_block(1, GAME->nextgrd[l][c]);
         }
+        draw_pad(B_BLACK, 2);
     }
+    cursor_to(PRV_LEFT, PRV_TOP+4);
 }
 
 static void draw_playgrd(void)
@@ -161,7 +131,7 @@ static void draw_playgrd(void)
     int l,c;
     for(l=0; l<LINES; ++l) {
         for(c=0; c<COLS; ++c) {
-            cursor_to(PGRD_PADLEFT+c*2, PGRD_PADTOP+l);
+            cursor_to(PGRD_LEFT+c*2, PGRD_TOP+l);
             draw_block(0, GAME->playgrd[l][c]);
         }
     }
@@ -174,63 +144,87 @@ static void draw_cur(void)
         if(GAME->cur[i].line < 0)
             continue;
 
-        cursor_to(PGRD_PADLEFT+GAME->cur[i].col*2, PGRD_PADTOP+GAME->cur[i].line);
+        cursor_to(PGRD_LEFT+GAME->cur[i].col*2, PGRD_TOP+GAME->cur[i].line);
         draw_block(0, GAME->curtype);
     }
 }
 
-static void draw_info(void)
+static void draw_linerecord(void)
 {
-    setcolor(33, 42);
-    setattr(1);
-    cursor_to(INF_PADLEFT, INF_PADTOP);
-    printf("        ");
-    cursor_to(INF_PADLEFT, INF_PADTOP+1);
-    printf("Lv.%5d", GAME->level+1);
-    cursor_to(INF_PADLEFT, INF_PADTOP+2);
-    printf("        ");
+    cursor_to(LR_LEFT, LR_TOP);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("   LINE   ");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(LR_LEFT, LR_TOP+1);
+    printf(" 1> %5d ", GAME->one);
+    cursor_to(LR_LEFT, LR_TOP+2);
+    printf(" 2> %5d ", GAME->two);
+    cursor_to(LR_LEFT, LR_TOP+3);
+    printf(" 3> %5d ", GAME->three);
+    cursor_to(LR_LEFT, LR_TOP+4);
+    printf(" 4> %5d ", GAME->four);
+    cursor_to(LR_LEFT, LR_TOP+5);
+    printf(" sum %4d ", GAME->one+GAME->two+GAME->three+GAME->four);
+    restore();
+}
 
-    setcolor(32, 44);
-    cursor_to(INF_PADLEFT, INF_PADTOP+3);
-    printf("%8d", GAME->score);
+static void draw_blockrecord(void)
+{
+    cursor_to(BR_LEFT, BR_TOP);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("  BLOCKS  ");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(BR_LEFT, BR_TOP+1);
+    printf(" I> %5d ", GAME->i);
+    cursor_to(BR_LEFT, BR_TOP+2);
+    printf(" J> %5d ", GAME->j);
+    cursor_to(BR_LEFT, BR_TOP+3);
+    printf(" L> %5d ", GAME->l);
+    cursor_to(BR_LEFT, BR_TOP+4);
+    printf(" O> %5d ", GAME->o);
+    cursor_to(BR_LEFT, BR_TOP+5);
+    printf(" S> %5d ", GAME->s);
+    cursor_to(BR_LEFT, BR_TOP+6);
+    printf(" T> %5d ", GAME->t);
+    cursor_to(BR_LEFT, BR_TOP+7);
+    printf(" Z> %5d ", GAME->z);
+    cursor_to(BR_LEFT, BR_TOP+8);
+    printf(" sum %4d ", GAME->i+GAME->j+GAME->l+GAME->o+GAME->s+GAME->t+GAME->z);
+    restore();
+}
 
-    setcolor(34, 40);
-    cursor_to(INF_PADLEFT, INF_PADTOP+4);
-    printf("%8d", GAME->lines);
+static void draw_status(void)
+{
+    cursor_to(ST_LEFT, ST_TOP);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("  SCORE  ");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(ST_LEFT, ST_TOP+1);
+    printf("%8d ", GAME->score);
 
-    setcolor(37, 40);
-    cursor_to(INF_PADLEFT, INF_PADTOP+5);
-    printf("%8d", GAME->one);
+    cursor_to(ST_LEFT, ST_TOP+3);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("  LEVEL  ");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(ST_LEFT, ST_TOP+4);
+    printf("%8d ", GAME->level+1);
 
-    cursor_to(INF_PADLEFT, INF_PADTOP+6);
-    printf("%8d", GAME->two);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+7);
-    printf("%8d", GAME->three);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+8);
-    printf("%8d", GAME->four);
-    setcolor(37, 40);
-    cursor_to(INF_PADLEFT, INF_PADTOP+9);
-    printf("%8d", GAME->i);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+10);
-    printf("%8d", GAME->j);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+11);
-    printf("%8d", GAME->o);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+12);
-    printf("%8d", GAME->l);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+13);
-    printf("%8d", GAME->s);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+14);
-    printf("%8d", GAME->t);
-
-    cursor_to(INF_PADLEFT, INF_PADTOP+15);
-    printf("%8d", GAME->z);
+    cursor_to(ST_LEFT, ST_TOP+6);
+    setcolor(F_WHITE, B_BLACK);
+    setattr(T_BOLD);
+    printf("  SPEED  ");
+    restore();
+    setcolor(F_BLACK, B_WHITE);
+    cursor_to(ST_LEFT, ST_TOP+7);
+    printf("%8d ", speeds[GAME->level]);
 
     restore();
 }
