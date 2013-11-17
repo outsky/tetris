@@ -23,7 +23,7 @@ static int can_move_down()
     int i;
     for(i=0; i<4; ++i) {
         struct pos* cur = &GAME->cur[i];
-        if(cur->line+1>=LINES || (cur->line>=0 && GAME->playgrd[cur->line+1][cur->col]!=0))
+        if(cur->line+1>=LINES || (cur->line+1>=0 && GAME->playgrd[cur->line+1][cur->col]!=0))
             return 0;
     }
     return 1;
@@ -775,6 +775,8 @@ static void stick(void)
 {
     int i;
     for(i=0; i<4; ++i) {
+        if(GAME->cur[i].line < 0)
+            continue;
         GAME->playgrd[GAME->cur[i].line][GAME->cur[i].col] = GAME->curtype;
     }
 }
