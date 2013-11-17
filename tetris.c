@@ -70,10 +70,14 @@ int move_down()
         return 0;
     }
 
+    pthread_mutex_lock(&mut);
     int i;
     for(i=0; i<4; ++i) {
         GAME->cur[i].line++;
     }
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mut);
+
     return 1;
 }
 int move_right()
@@ -81,10 +85,14 @@ int move_right()
     if(1 != can_move_right())
         return 0;
 
+    pthread_mutex_lock(&mut);
     int i;
     for(i=0; i<4; ++i) {
         GAME->cur[i].col++;
     }
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mut);
+
     return 1;
 }
 int move_left()
@@ -92,14 +100,19 @@ int move_left()
     if(1 != can_move_left())
         return 0;
 
+    pthread_mutex_lock(&mut);
     int i;
     for(i=0; i<4; ++i) {
         GAME->cur[i].col--;
     }
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mut);
+
     return 1;
 }
 int rotate()
 {
+    pthread_mutex_lock(&mut);
     int ret = 0;
     switch(GAME->curtype)
     {
@@ -132,6 +145,8 @@ int rotate()
         break;
     }
 
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mut);
     return ret; 
 }
 

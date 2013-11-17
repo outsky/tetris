@@ -1,6 +1,8 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
+#include <pthread.h>
+
 #define LINES 20
 #define COLS 10
 
@@ -80,5 +82,8 @@ static void gameover(void);
 static int isgameover(void);
 
 static void onclearline(int n);
+
+pthread_cond_t cond;
+pthread_mutex_t mut;
 
 #endif

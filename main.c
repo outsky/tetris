@@ -11,7 +11,6 @@
 #include "timer.h"
 #include "tetris.h"
 
-
 static void sigint(int);
 static void quit(void);
 
@@ -25,6 +24,7 @@ static void draw_status(void);
 static void draw_block(int preview, int n);
 static void draw_cur(void);
 
+static void* trd_draw(void*);
 static void* trd_timer(void*);
 
 struct termios org;
@@ -42,8 +42,13 @@ int main()
     game_init();
     draw();
 
+    pthread_mutex_init(&mut, NULL);
+    pthread_cond_init(&cond, NULL);
+
     pthread_t tid;
     pthread_create(&tid, NULL, trd_timer, NULL);
+    pthread_detach(tid);
+    pthread_create(&tid, NULL, trd_draw, NULL);
     pthread_detach(tid);
 
     int c;
@@ -58,12 +63,11 @@ int main()
             move_right();
         } else if(c == 32) {
             drop_down();
-        } else if(c == 'q'){
+        } else if(c == 'q') {
             quit();
         } else {
             continue;
         }
-        draw();
     }
 
     return 0;
@@ -74,6 +78,8 @@ static void quit(void)
     restore();
     restore_input(&org);
     erase_display();
+    pthread_mutex_destroy(&mut);
+    pthread_cond_destroy(&cond);
     printf("\n");
     exit(0);
 }
@@ -253,6 +259,16 @@ static void draw_status(void)
     restore();
 }
 
+static void* trd_draw(void* p)
+{
+    for(;;) {
+        if(0 == pthread_mutex_lock(&mut)) {
+            pthread_cond_wait(&cond, &mut);
+            draw();
+            pthread_mutex_unlock(&mut);
+        }
+    }
+}
 static void* trd_timer(void* p)
 {
     timer_init();
@@ -261,7 +277,6 @@ static void* trd_timer(void* p)
         if(timer_interval() >= speeds[GAME->level]) {
             move_down();
             timer_reset();
-            draw();
         }
         usleep(50);
     }
